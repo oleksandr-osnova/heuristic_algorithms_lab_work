@@ -22,7 +22,7 @@ def main():
         tsp_problem_solution_tour = np.array([cities[city] for city in tsp_problem_solution.tours[0]])
         tsp_problem_solution_tour_distance = utils.calculate_distance(tsp_problem_solution_tour)
 
-        plt.figure('Рішення')
+        plt.figure('Solution')
         utils.plot_route(
             tsp_problem_solution_tour, f"Рішення, Дистанція: {tsp_problem_solution_tour_distance:.2f}",
             block = False, pause = initial_plot_pause)
@@ -40,9 +40,11 @@ def main():
     print(f"Різниця між найкращим та гіршим рішеннями: {difference:.2f}")
 
     # Побудова гістограми рішень
+    plt.figure('Histogram')
     utils.plot_histogram(results)
 
     # Графік збіжності цільової функції
+    plt.figure('Convergence')
     utils.plot_convergence(results)
 
 

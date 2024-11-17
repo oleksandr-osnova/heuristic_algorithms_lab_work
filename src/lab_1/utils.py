@@ -1,4 +1,5 @@
 import numpy as np
+import csv
 import pathlib
 import random
 import matplotlib.pyplot as plt
@@ -7,6 +8,9 @@ data_folder = pathlib.Path('../../data/lab_1')
 input_data_folder = data_folder / 'input'
 output_data_folder = data_folder / 'output'
 
+csv_output = "output.csv"
+csv_output_path = output_data_folder / csv_output
+csv_output_columns = ["Iteration", "Distance", "Best Distance", "Worst Distance", "Difference"]
 
 def generate_random_route(cities):
     return np.array(random.sample(list(cities), len(cities)))
@@ -78,7 +82,8 @@ def hill_climbing(cities, max_no_improve=None):
 
 
 def hill_climbing_multi_start(
-        cities, num_starts=None, max_no_improve=None, interactive_plot=False, block=True, first_pause = 6, pause = 0.5):
+        cities, num_starts=None, max_no_improve=None, interactive_plot=False, block=True, first_pause = 6, pause = 0.5,
+        results_file_path = csv_output_path):
     num_starts = num_starts or round(len(cities) * 0.2)
 
     best_route = None
@@ -89,6 +94,8 @@ def hill_climbing_multi_start(
     iteration = 0
 
     max_no_improve = max_no_improve or calculate_max_no_improve_tries(len(cities), 1.2, 20, 5)
+
+    create_csv_file(results_file_path)
 
     print(f"Максимальна кількість ітерацій без покращень = {max_no_improve}")
 
@@ -112,12 +119,14 @@ def hill_climbing_multi_start(
                 plot_route(
                     best_route, f"Ітерація: {iteration}, Дистанція: {best_distance:.2f}",
                     interactive_plot=interactive_plot, block = block, pause = plot_pause)
+            parsed_iteration = str(iteration).zfill(len(str(num_starts)))
             print(
-                f"Ітерація = {str(iteration).zfill(len(str(num_starts)))}: "
+                f"Ітерація = {parsed_iteration}: "
                 f"Наявний маршрут (довжина = {current_distance:.2f}), "
                 f"Найкращий маршрут (довжина = {best_distance:.2f}), "
                 f"Найгірший маршрут (довжина = {worst_distance:.2f})"
             )
+            write_row_csv_file([parsed_iteration, current_distance, best_distance, worst_distance, calculate_distance_difference(best_distance, worst_distance)])
 
     if interactive_plot:
         plt.ioff()  # Вимикаємо інтерактивний режим
@@ -191,3 +200,16 @@ def plot_convergence(results):
 def calculate_max_no_improve_tries(num, scale=1.25, min_count=20, multiplayer=5):
     fraction = max((int(num - (num * 0.1) ** scale)), 0)
     return (fraction + min_count) * multiplayer
+
+
+def create_csv_file(file_path=csv_output_path, columns=None):
+    if columns is None:
+        columns = csv_output_columns
+    with open(file_path, mode="w", newline='', encoding="utf-8") as file:  # Тип IO[str]
+        writer = csv.writer(file)
+        writer.writerow(columns)
+
+def write_row_csv_file(row, file_path=csv_output_path):
+    with open(file_path, mode="a", newline='', encoding="utf-8") as file:  # Тип IO[str]
+        writer = csv.writer(file)
+        writer.writerow(row)
