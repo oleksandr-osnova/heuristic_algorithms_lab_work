@@ -126,7 +126,10 @@ def hill_climbing_multi_start(
                 f"Найкращий маршрут (довжина = {best_distance:.2f}), "
                 f"Найгірший маршрут (довжина = {worst_distance:.2f})"
             )
-            write_row_csv_file([parsed_iteration, current_distance, best_distance, worst_distance, calculate_distance_difference(best_distance, worst_distance)])
+            write_row_csv_file([
+                parsed_iteration, current_distance, best_distance, worst_distance,
+                calculate_distance_difference(best_distance, worst_distance)
+            ])
 
     if interactive_plot:
         plt.ioff()  # Вимикаємо інтерактивний режим

@@ -8,13 +8,17 @@ Lab work 1 for heuristic algorithms
 [Main file](main.py)
 
 Solution for dataset:
+
 ![solution](../../data/lab_1/output/Solution.png)
 
 Result of Hill Climbing:
+
 ![result](../../data/lab_1/output/Hill_Climbing.png)
 
 Histogram:
+
 ![histogram](../../data/lab_1/output/Histogram.png)
 
 Convergence:
+
 ![convergence](../../data/lab_1/output/Convergence.png)
