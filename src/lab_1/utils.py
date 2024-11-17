@@ -169,7 +169,6 @@ def plot_route(route, title, interactive_plot=False, block=True, pause=0.5):
 
 
 def plot_histogram(results):
-    plt.figure()
     plt.hist(results, bins=20, color='blue', alpha=0.7, edgecolor='black')
     plt.title("Гістограма дистанцій для маршрутів")
     plt.xlabel("Довжина маршруту")
@@ -188,7 +187,6 @@ def calculate_route_distance_difference(best_route, worst_route):
 
 
 def plot_convergence(results):
-    plt.figure()
     plt.plot(range(len(results)), sorted(results, reverse=True), marker='o', linestyle='-', color='green')
     plt.title("Графік збіжності цільової функції")
     plt.xlabel("Запуски")
