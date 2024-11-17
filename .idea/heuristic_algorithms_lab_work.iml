@@ -16,4 +16,8 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Python 3.12 (heuristic_algorithms_lab_work) interpreter library" level="application" />
   </component>
+  <component name="PackageRequirementsSettings">
+    <option name="removeUnused" value="true" />
+    <option name="modifyBaseFiles" value="true" />
+  </component>
 </module>
