@@ -44,9 +44,8 @@ def incremental_distance_update(route, i, j):
     return added - removed
 
 
-def hill_climbing(cities, max_no_improve=None):
+def hill_climbing(cities, max_no_improve=50):
     num_cities = len(cities)
-    max_no_improve = max_no_improve or calculate_max_no_improve_tries(num_cities, 1.2, 20, 5)
 
     current_route = generate_random_route(cities)
     current_distance = calculate_distance(current_route)
@@ -82,7 +81,7 @@ def hill_climbing(cities, max_no_improve=None):
 
 
 def hill_climbing_multi_start(
-        cities, num_starts=None, max_no_improve=None, interactive_plot=False, block=True, first_pause = 6, pause = 0.5,
+        cities, num_starts=None, max_no_improve=50, interactive_plot=False, block=True, first_pause = 6, pause = 0.5,
         results_file_path = csv_output_path):
     num_starts = num_starts or round(len(cities) * 0.2)
 
@@ -93,11 +92,7 @@ def hill_climbing_multi_start(
     results = []
     iteration = 0
 
-    max_no_improve = max_no_improve or calculate_max_no_improve_tries(len(cities), 1.2, 20, 5)
-
     create_csv_file(results_file_path)
-
-    print(f"Максимальна кількість ітерацій без покращень = {max_no_improve}")
 
     if interactive_plot:
         plt.ion()  # Вмикаємо інтерактивний режим
