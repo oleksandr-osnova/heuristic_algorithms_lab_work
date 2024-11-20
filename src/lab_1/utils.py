@@ -44,7 +44,7 @@ def incremental_distance_update(route, i, j):
     return added - removed
 
 
-def hill_climbing(cities, max_no_improve=50):
+def hill_climbing(cities, max_attempts = 10):
     num_cities = len(cities)
 
     current_route = generate_random_route(cities)
@@ -52,38 +52,25 @@ def hill_climbing(cities, max_no_improve=50):
 
     best_route, best_distance = current_route, current_distance
 
-    no_improve_counter = 0
+    # Перебір всіх можливих пар індексів i та j
+    for a in range(1, max_attempts):
+        for i in range(1, num_cities - 1):  # Починаємо з 1, щоб не змінювати стартову точку
+            for j in range(i + 1, num_cities):  # j завжди більше за i
+                delta = incremental_distance_update(current_route, i, j)
 
-    while no_improve_counter < max_no_improve:
-        improved = False
-
-        # Генерація випадкових індексів для застосування 2-opt
-        i, j = sorted(random.sample(range(1, num_cities), 2))
-        if j - i == 1:  # Пропускаємо сусідні міста
-            continue
-
-        # Обчислюємо зміну довжини маршруту
-        delta = incremental_distance_update(current_route, i, j)
-
-        if delta < 0:  # Якщо покращення знайдено
-            current_route = two_opt(current_route, i, j)
-            current_distance += delta
-            improved = True
-
-        # Якщо знайдено поліпшення, оновлюємо кращий маршрут
-        if improved:
-            best_route, best_distance = current_route, current_distance
-            no_improve_counter = 0
-        else:
-            no_improve_counter += 1
+                if delta < 0:  # Якщо покращення знайдено
+                    current_route = two_opt(current_route, i, j)
+                    current_distance += delta
+                    best_route, best_distance = current_route, current_distance
 
     return best_route, best_distance
 
 
 def hill_climbing_multi_start(
-        cities, num_starts=None, max_no_improve=50, interactive_plot=False, block=True, first_pause = 6, pause = 0.5,
+        cities, num_starts=None, max_attempts=None, interactive_plot=False, block=True, first_pause = 6, pause = 0.5,
         results_file_path = csv_output_path):
-    num_starts = num_starts or round(len(cities) * 0.2)
+    num_starts = num_starts or round(len(cities) * 0.05)
+    max_attempts = max_attempts or round(len(cities) * 0.1)
 
     best_route = None
     best_distance = float('inf')
@@ -98,7 +85,7 @@ def hill_climbing_multi_start(
         plt.ion()  # Вмикаємо інтерактивний режим
 
     for _ in range(num_starts):
-        current_route, current_distance = hill_climbing(cities, max_no_improve)
+        current_route, current_distance = hill_climbing(cities, max_attempts)
         results.append(current_distance)
 
         if current_distance < best_distance:

@@ -5,7 +5,7 @@ import utils
 
 # Головна функція для запуску обчислювального експерименту
 def main():
-    number_of_starts = 20
+    number_of_starts = None
     interactive_plot = False
     initial_plot_pause = 6
     tsp_problem_file_name = 'a280.tsp'
@@ -30,8 +30,7 @@ def main():
 
     iteration_figure = plt.figure('Ітерація')
     best_route, best_distance, worst_route, worst_distance, results = utils.hill_climbing_multi_start(
-        city_coords, number_of_starts, interactive_plot=interactive_plot, first_pause = initial_plot_pause,
-        max_no_improve=len(city_coords) * 1.5)
+        city_coords, number_of_starts, interactive_plot=interactive_plot, first_pause = initial_plot_pause)
     plt.close(iteration_figure)
 
     fig_hill_climbing = plt.figure('Hill Climbing')
