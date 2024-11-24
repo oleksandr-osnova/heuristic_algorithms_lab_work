@@ -109,7 +109,7 @@ def h_c_with_s_a_multi_start(
         cities, num_starts=None, interactive_plot=False, block=True, first_pause = 6, pause = 0.5,
         results_file_path = csv_output_path, initial_temperature=100, cooling_rate=0.99):
 
-    num_starts = num_starts or round(len(cities) * 0.05)
+    num_starts = num_starts or max(round(len(cities) * 0.05), 5)
 
     best_route = None
     best_distance = float('inf')
