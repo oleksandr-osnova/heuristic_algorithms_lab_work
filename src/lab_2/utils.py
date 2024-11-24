@@ -18,62 +18,98 @@ output_data_folder = data_folder / 'output'
 csv_output = "output.csv"
 csv_output_path = output_data_folder / csv_output
 
-def generate_s_a_condition(delta, temperature):
-    # print(delta, temperature, decimal.Decimal(-delta / temperature).exp())
-    return decimal.Decimal(random.random()) < decimal.Decimal(-delta / temperature).exp()
+def generate_count_of_total_neighbours(num_cities):
+    return (num_cities - 2) * (num_cities - 1) // 2
 
-def try_method(current_route, temperature, num_attempts=100):
+def generate_s_a_condition(delta, temperature):
+    if delta <= 0:
+        return True
+    return decimal.Decimal(random.random()) < decimal.Decimal(-abs(delta) / temperature).exp()
+
+def generate_initial_temperature(initial_temperature, route):
+    # Використовуємо метод TRY для визначення оптимальної початкової температури
+    while True:
+        temperature = initial_temperature
+        acceptance_ratio = try_method(route, temperature)
+        print(acceptance_ratio, temperature)
+        if acceptance_ratio >= 0.9:
+            break
+        initial_temperature *= 1.1  # Підвищуємо температуру для досягнення необхідного порогу
+    return initial_temperature
+
+def try_method(current_route, temperature):
+    num_cities = len(current_route)
+    num_attempts = generate_count_of_total_neighbours(num_cities)
     accepted = 0
-    for _ in range(num_attempts):
-        delta = calculate_route_distance_difference(current_route, utils.generate_random_route(current_route))
-        print('delta', delta)
-        if generate_s_a_condition(delta, temperature):
-            accepted += 1
+    for i in range(1, num_cities - 1):  # Починаємо з 1, щоб не змінювати стартову точку
+        for j in range(i + 1, num_cities):  # j завжди більше за i
+            delta = utils.incremental_distance_update(current_route, i, j)
+
+            if generate_s_a_condition(delta, temperature):
+                accepted += 1
     return accepted / num_attempts
 
+# quasi equilibrium
+def should_update_temperature(accepted, rejected, total_neighbors):
+    return accepted >= total_neighbors or rejected >= 2 * total_neighbors
+
+def cooling_schedule(temperature, alpha=0.9):
+    return temperature * alpha
+
+def is_frozen(temperature, threshold=1e-3):
+    return temperature < threshold
+
+def is_frozen_converged(frozen_count, max_frozen=3):
+    return frozen_count >= max_frozen
+
 # fill climbing with simulated annealing
-def h_c_with_s_a(cities, initial_temperature=10000, cooling_rate=0.999):
+def h_c_with_s_a(cities, initial_temperature=100, cooling_rate=0.999, max_frozen=3):
     num_cities = len(cities)
+    neighbors_count = generate_count_of_total_neighbours(num_cities)  # Кількість можливих 2-opt
 
     temperature = initial_temperature
+    frozen_count = 0
+    accepted = 0
+    rejected = 0
+
     current_route = utils.generate_random_route(cities)
     current_distance = utils.calculate_distance(current_route)
-
     best_route, best_distance = current_route, current_distance
 
-    while True:
-        # Генерація випадкових індексів для застосування 2-opt
-        i, j = sorted(random.sample(range(1, num_cities), 2))
-        if j - i == 1:  # Пропускаємо сусідні міста
-            continue
 
-        # Обчислюємо зміну довжини маршруту
-        delta = utils.incremental_distance_update(current_route, i, j)
+    while not is_frozen_converged(frozen_count, max_frozen):
+        for i in range(1, num_cities - 1):  # Починаємо з 1, щоб не змінювати стартову точку
+            for j in range(i + 1, num_cities):  # j завжди більше за i
+                delta = utils.incremental_distance_update(current_route, i, j)
 
-        if delta < 0:  # Якщо покращення знайдено, оновлюємо кращий маршрут
-            # print('better')
-            current_route = utils.two_opt(current_route, i, j)
-            current_distance += delta
-            best_route, best_distance = current_route, current_distance
-        elif generate_s_a_condition(delta, temperature):
-            # print('random')
-            current_route = utils.two_opt(current_route, i, j)
-            current_distance += delta
+                if generate_s_a_condition(delta, temperature):
+                    current_route, current_distance = utils.two_opt(current_route, i, j), current_distance + delta
+                    if delta < 0:  # Якщо покращення знайдено
+                        best_route, best_distance = current_route, current_distance
 
-        print('try_method', try_method(current_route, temperature), temperature)
-        if try_method(current_route, temperature) >= 0.8:
-            temperature *= cooling_rate
-            print('try_method', temperature, best_distance)
+                    accepted += 1
+                else:
+                    rejected += 1
+
+        if should_update_temperature(accepted, rejected, neighbors_count):
+            temperature = cooling_schedule(temperature, cooling_rate)
+            accepted = 0
+            rejected = 0
+            frozen_count = 0
+        else:
+            frozen_count += 1
 
         # Умова замороження (низька температура)
-        if temperature < 1e-1:
+        if is_frozen(temperature):
             break
 
     return best_route, best_distance
 
 def h_c_with_s_a_multi_start(
-        cities, num_starts=10, interactive_plot=False, block=True, first_pause = 6, pause = 0.5,
+        cities, num_starts=None, interactive_plot=False, block=True, first_pause = 6, pause = 0.5,
         results_file_path = csv_output_path, initial_temperature=100, cooling_rate=0.99):
+
+    num_starts = num_starts or round(len(cities) * 0.05)
 
     best_route = None
     best_distance = float('inf')

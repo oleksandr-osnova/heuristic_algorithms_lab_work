@@ -5,15 +5,13 @@ import utils
 
 # Головна функція для запуску обчислювального експерименту
 def main():
-    number_of_starts = 10
-    initial_temperature = 1
-    cooling_rate = 0.5
+    number_of_starts = None
+    initial_temperature = 250
+    cooling_rate = 0.95
     interactive_plot = False
     initial_plot_pause = 6
-    tsp_problem_file_name = 'a50.tsp'
-    tsp_problem_solution_file_name = None
-    # tsp_problem_file_name = 'a280.tsp'
-    # tsp_problem_solution_file_name = 'a280.opt.tour'
+    tsp_problem_file_name = 'a280.tsp'
+    tsp_problem_solution_file_name = 'a280.opt.tour'
 
     tsp_problem = tsplib95.load(str(utils.input_data_folder / tsp_problem_file_name))
 
@@ -21,15 +19,7 @@ def main():
     city_coords = np.array([*cities.values()])
 
     number_of_starts = number_of_starts if number_of_starts else round(len(city_coords) * 0.2)
-
-    # Використовуємо метод TRY для визначення оптимальної початкової температури
-    while True:
-        temperature = initial_temperature
-        acceptance_ratio = utils.try_method(utils.generate_random_route(city_coords), temperature)
-        print(acceptance_ratio, temperature)
-        if acceptance_ratio >= 0.8:
-            break
-        initial_temperature *= 1.1  # Підвищуємо температуру для досягнення необхідного порогу
+    initial_temperature = utils.generate_initial_temperature(initial_temperature, utils.generate_random_route(city_coords))
 
     if tsp_problem_solution_file_name:
         tsp_problem_solution = tsplib95.load(str(utils.input_data_folder / tsp_problem_solution_file_name))
