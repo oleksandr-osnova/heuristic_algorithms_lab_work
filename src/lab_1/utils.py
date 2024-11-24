@@ -69,7 +69,7 @@ def hill_climbing(cities, max_attempts = 10):
 def hill_climbing_multi_start(
         cities, num_starts=None, max_attempts=None, interactive_plot=False, block=True, first_pause = 6, pause = 0.5,
         results_file_path = csv_output_path):
-    num_starts = num_starts or round(len(cities) * 0.05)
+    num_starts = num_starts or max(round(len(cities) * 0.05), 5)
     max_attempts = max_attempts or round(len(cities) * 0.1)
 
     best_route = None

@@ -8,8 +8,8 @@ def main():
     number_of_starts = None
     interactive_plot = False
     initial_plot_pause = 6
-    tsp_problem_file_name = 'a280.tsp'
-    tsp_problem_solution_file_name = 'a280.opt.tour'
+    tsp_problem_file_name = 'pr76.tsp'
+    tsp_problem_solution_file_name = 'pr76.opt.tour'
 
     tsp_problem = tsplib95.load(str(utils.input_data_folder / tsp_problem_file_name))
 
