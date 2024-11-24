@@ -18,7 +18,6 @@ def main():
     cities = tsp_problem.node_coords
     city_coords = np.array([*cities.values()])
 
-    number_of_starts = number_of_starts if number_of_starts else round(len(city_coords) * 0.2)
     initial_temperature = utils.generate_initial_temperature(initial_temperature, utils.generate_random_route(city_coords))
 
     if tsp_problem_solution_file_name:
