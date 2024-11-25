@@ -7,11 +7,11 @@ import utils
 def main():
     number_of_starts = None
     initial_temperature = 250
-    cooling_rate = 0.95
+    cooling_rate = 0.99
     interactive_plot = False
     initial_plot_pause = 6
-    tsp_problem_file_name = 'pr76.tsp'
-    tsp_problem_solution_file_name = 'pr76.opt.tour'
+    tsp_problem_file_name = 'ulysses16.tsp'
+    tsp_problem_solution_file_name = 'ulysses16.opt.tour'
 
     tsp_problem = tsplib95.load(str(utils.input_data_folder / tsp_problem_file_name))
 

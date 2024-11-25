@@ -22,16 +22,13 @@ def generate_count_of_total_neighbours(num_cities):
     return (num_cities - 2) * (num_cities - 1) // 2
 
 def generate_s_a_condition(delta, temperature):
-    if delta <= 0:
-        return True
-    return decimal.Decimal(random.random()) < decimal.Decimal(-abs(delta) / temperature).exp()
+    return decimal.Decimal(random.random()) < decimal.Decimal(-delta / temperature).exp()
 
 def generate_initial_temperature(initial_temperature, route):
     # Використовуємо метод TRY для визначення оптимальної початкової температури
     while True:
         temperature = initial_temperature
         acceptance_ratio = try_method(route, temperature)
-        print(acceptance_ratio, temperature)
         if acceptance_ratio >= 0.9:
             break
         initial_temperature *= 1.1  # Підвищуємо температуру для досягнення необхідного порогу
@@ -48,10 +45,6 @@ def try_method(current_route, temperature):
             if generate_s_a_condition(delta, temperature):
                 accepted += 1
     return accepted / num_attempts
-
-# quasi equilibrium
-def should_update_temperature(accepted, rejected, total_neighbors):
-    return accepted >= total_neighbors or rejected >= 2 * total_neighbors
 
 def cooling_schedule(temperature, alpha=0.9):
     return temperature * alpha
@@ -84,19 +77,23 @@ def h_c_with_s_a(cities, initial_temperature=100, cooling_rate=0.999, max_frozen
 
                 if generate_s_a_condition(delta, temperature):
                     current_route, current_distance = utils.two_opt(current_route, i, j), current_distance + delta
-                    if delta < 0:  # Якщо покращення знайдено
+                    if current_distance < best_distance:  # Якщо покращення знайдено
                         best_route, best_distance = current_route, current_distance
 
                     accepted += 1
                 else:
                     rejected += 1
 
-        if should_update_temperature(accepted, rejected, neighbors_count):
+        if accepted >= neighbors_count:
             temperature = cooling_schedule(temperature, cooling_rate)
             accepted = 0
             rejected = 0
             frozen_count = 0
-        else:
+
+        if rejected >= 2 * neighbors_count:
+            temperature = cooling_schedule(temperature, cooling_rate)
+            accepted = 0
+            rejected = 0
             frozen_count += 1
 
         # Умова замороження (низька температура)
