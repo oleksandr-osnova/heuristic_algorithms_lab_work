@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import tsplib95
 
+from src.lab_1 import utils as utils2
 import utils
 import random
 
@@ -58,7 +59,7 @@ def update_pheromones(pheromones, solutions, evaporation_rate, pheromone_intensi
             pheromones[a][b] += pheromone_intensity / distance
             pheromones[b][a] += pheromone_intensity / distance
 
-def ant_colony_optimization(city_coords, num_ants = 10, num_iterations = 50, evaporation_rate = 0.4, pheromone_intensity = 5, alpha = 2, beta = 3):
+def ant_colony_optimization(city_coords, num_ants = 10, num_iterations = 50, evaporation_rate = 0.4, pheromone_intensity = 5, alpha = 2, beta = 3, results_file_path=utils.csv_output_path):
     num_cities = len(city_coords)
     distances = np.array([
         [np.linalg.norm(city_coords[i] - city_coords[j]) for j in range(num_cities)]
@@ -68,9 +69,13 @@ def ant_colony_optimization(city_coords, num_ants = 10, num_iterations = 50, eva
     pheromones = initialize_pheromones(num_cities)
 
     best_solution = None
+    distance = 0
     best_distance = float('inf')
     worst_distance = 0
     results = []
+
+    # Ініціалізація CSV файлу
+    utils2.create_csv_file(results_file_path)
 
     for iteration in range(num_iterations):
         solutions = []
@@ -89,6 +94,12 @@ def ant_colony_optimization(city_coords, num_ants = 10, num_iterations = 50, eva
         results.append(best_distance)
         # Глобальне оновлення феромонів
         update_pheromones(pheromones, solutions, evaporation_rate, pheromone_intensity)
+
+        # Запис результатів у CSV
+        parsed_iteration = str(iteration + 1).zfill(len(str(num_iterations)))
+        utils2.write_row_csv_file([
+            parsed_iteration, distance, best_distance, worst_distance, utils2.calculate_distance_difference(best_distance, worst_distance)
+        ], results_file_path)
 
         print(f"Ітерація {iteration + 1}: Найкраща відстань = {best_distance:.2f}")
 
@@ -111,8 +122,6 @@ def main ():
 
     cities = tsp_problem.node_coords
     city_coords = np.array([*cities.values()])
-
-    NUM_ANTS = len(city_coords)
 
     if tsp_problem_solution_file_name:
         tsp_problem_solution = tsplib95.load(str(utils.input_data_folder / tsp_problem_solution_file_name))
