@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import tsplib95
+
 import utils
 import random
 
@@ -23,7 +24,7 @@ def calculate_probabilities(pheromones, distances, current_city, visited, alpha 
     probabilities_sum = np.sum(probabilities)
     return probabilities / probabilities_sum if probabilities_sum > 0 else probabilities
 
-def ant_activity(distances, pheromones, start, alpha = 2, beta = 3):
+def ant_activity(distances, city_coords, pheromones, start, alpha = 2, beta = 3):
     num_cities = len(distances)
     current_city = start
     visited = [current_city]
@@ -31,6 +32,9 @@ def ant_activity(distances, pheromones, start, alpha = 2, beta = 3):
     while len(visited) < num_cities:
         # Обчислюємо список доступних міст
         probabilities = calculate_probabilities(pheromones, distances, current_city, visited, alpha, beta)
+        # Перевірка на можливість продовження маршруту
+        if np.sum(probabilities) == 0:
+            break
         # Вибір наступного міста
         next_city = np.random.choice(range(num_cities), p=probabilities)
         visited.append(next_city)
@@ -38,7 +42,7 @@ def ant_activity(distances, pheromones, start, alpha = 2, beta = 3):
 
     # Повертаємося до початкового міста для завершення маршруту
     visited.append(visited[0])
-    total_distance = utils.calculate_distance(distances[visited])
+    total_distance = utils.calculate_distance(city_coords[visited])
     return visited, total_distance
 
 def update_pheromones(pheromones, solutions, evaporation_rate, pheromone_intensity = 50):
@@ -47,6 +51,8 @@ def update_pheromones(pheromones, solutions, evaporation_rate, pheromone_intensi
 
     # Додавання нових феромонів
     for solution, distance in solutions:
+        if distance == float('inf'):  # Ігноруємо невалідні маршрути
+            continue
         for i in range(len(solution) - 1):
             a, b = solution[i], solution[i + 1]
             pheromones[a][b] += pheromone_intensity / distance
@@ -68,7 +74,7 @@ def ant_colony_optimization(city_coords, num_ants = 10, num_iterations = 50, eva
         solutions = []
         for _ in range(num_ants):
             # Використовуємо ant_activity для створення маршруту
-            solution, distance = ant_activity(distances, pheromones, random.randint(0, num_cities - 1), alpha, beta )
+            solution, distance = ant_activity(distances, city_coords, pheromones, random.randint(0, num_cities - 1), alpha, beta)
             solutions.append((solution, distance))
 
             if distance < best_distance:
@@ -99,6 +105,8 @@ def main ():
 
     cities = tsp_problem.node_coords
     city_coords = np.array([*cities.values()])
+
+    NUM_ANTS = len(city_coords)
 
     if tsp_problem_solution_file_name:
         tsp_problem_solution = tsplib95.load(str(utils.input_data_folder / tsp_problem_solution_file_name))
