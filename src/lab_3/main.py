@@ -69,6 +69,8 @@ def ant_colony_optimization(city_coords, num_ants = 10, num_iterations = 50, eva
 
     best_solution = None
     best_distance = float('inf')
+    worst_distance = 0
+    results = []
 
     for iteration in range(num_iterations):
         solutions = []
@@ -81,14 +83,18 @@ def ant_colony_optimization(city_coords, num_ants = 10, num_iterations = 50, eva
                 best_solution = solution
                 best_distance = distance
 
+            if distance > worst_distance:
+                worst_distance = distance
+
+        results.append(best_distance)
         # Глобальне оновлення феромонів
         update_pheromones(pheromones, solutions, evaporation_rate, pheromone_intensity)
 
         print(f"Ітерація {iteration + 1}: Найкраща відстань = {best_distance:.2f}")
 
-    # Перетворюємо найкращий маршрут з індексів у координати
-    best_route_coords = city_coords[best_solution]
-    return best_route_coords, best_distance
+    # Повертаємо результати для аналізу
+    difference = worst_distance - best_distance
+    return best_solution, best_distance, worst_distance, difference, results
 
 def main ():
     NUM_ANTS = 76  # Кількість мурах
@@ -118,10 +124,21 @@ def main ():
         utils.plot_route(tsp_problem_solution_tour, f"Рішення, Дистанція: {tsp_problem_solution_tour_distance:.2f}")
         fig_solution.savefig(utils.output_data_folder / 'Solution.png')
 
-    best_route, best_distance = ant_colony_optimization(city_coords, NUM_ANTS, NUM_ITERATIONS, EVAPORATION_RATE, PHEROMONE_INTENSITY, ALPHA, BETA)
+    best_route, best_distance, worst_distance, difference, results = ant_colony_optimization(city_coords, NUM_ANTS, NUM_ITERATIONS, EVAPORATION_RATE, PHEROMONE_INTENSITY, ALPHA, BETA)
+
+    # Показ статистики
+    print(f"Різниця між найкращим та гіршим рішеннями: {difference:.2f}")
+
+    fig_histogram = plt.figure('Histogram')
+    utils.plot_histogram(results)
+    fig_histogram.savefig(utils.output_data_folder / 'Histogram.png')
+
+    fig_convergence = plt.figure('Convergence')
+    utils.plot_convergence(results)
+    fig_convergence.savefig(utils.output_data_folder / 'Convergence.png')
 
     fig_hill_climbing = plt.figure('ACO')
-    utils.plot_route(best_route, f"ACO: Найкраща дистанція {best_distance:.2f}")
+    utils.plot_route(city_coords[best_route], f"ACO: Найкраща дистанція {best_distance:.2f}")
     fig_hill_climbing.savefig(utils.output_data_folder / 'ACO.png')
 
 # Запуск програми
